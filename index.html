@@ -1,138 +1,102 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ihre Aktien-Chance in Deutschland & Österreich</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ihre kostenlose Aktienempfehlung</title>
 <style>
-  body {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #f4f7fb;
-    background-image: url('https://images.unsplash.com/photo-1569025690938-a00729c9e4eb?auto=format&fit=crop&w=1920&q=80');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    margin: 0;
-    padding: 0;
-  }
-  .container {
-    max-width: 800px;
-    margin: 50px auto;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-  }
-  h1 { color: #003366; }
-  ul { line-height: 1.8; }
-  .cta {
-    background: #25d366;
-    padding: 15px;
-    text-align: center;
-    color: white;
-    font-size: 20px;
-    margin-top: 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .cta:hover { background: #1ebe57; }
-  .blocked {
-    text-align: center;
-    padding: 50px;
-    font-size: 18px;
-    color: red;
-    background: rgba(255,255,255,0.85);
-    border-radius: 10px;
-    max-width: 600px;
-    margin: 80px auto;
-  }
+    body { font-family: Arial, sans-serif; margin: 0; background: #f8f9fa; color: #333; text-align: center; }
+    header { background: #004aad; color: white; padding: 20px 0; font-size: 1.5em; font-weight: bold; }
+    .banner { width: 100%; max-width: 900px; display: block; margin: auto; }
+    .content { max-width: 600px; margin: auto; padding: 20px; }
+    .content p { font-size: 1.2em; line-height: 1.6; }
+    .cta-btn { display: inline-block; background: #25d366; color: white; padding: 15px 25px; margin-top: 20px; text-decoration: none; font-size: 1.3em; border-radius: 8px; transition: background 0.3s ease; }
+    .cta-btn:hover { background: #1ebe5d; }
+    .blocked { color: red; font-size: 1.2em; font-weight: bold; padding: 30px; }
 </style>
 </head>
 <body>
-<div id="content"></div>
+
+<header>Exklusive Aktien-Tipps für Deutschland & Österreich</header>
+
+    
+<img class="banner" src="https://github.com/TR-por/TR/blob/main/banner.jpg.png?raw=true" alt="Investment banner">
+    
+<div class="content" id="mainContent">
+    <p>💡 Erhalten Sie <strong>10 kostenlose Aktienempfehlungen</strong> – perfekt für Anleger in Deutschland und Österreich.</p>
+    <p>Unsere Experten analysieren den Markt täglich, um Ihnen nur die besten Chancen zu präsentieren.</p>
+    <p><strong>Keine Kosten, kein Risiko</strong> – nur wertvolle Informationen für Ihre Investments.</p>
+    
+    <a class="cta-btn" id="ctaButton" href="#" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width:20px;vertical-align:middle;margin-right:8px;">
+        Jetzt auf WhatsApp anfordern
+    </a>
+</div>
 
 <script>
-const googleScriptURL = "https://script.google.com/macros/s/AKfycbz4qCLwaA_9X9Kk9tIGwY2G3_MCy7ISQXZDpwiNL7-kzecAb1YnP_v_GBq3JQd14arv5g/exec";
+const googleScriptURL = "https://script.google.com/macros/s/AKfycbwtCtnjbqfNL3_I5p5_F4XSHhos1yxH4_WJbQrfWfhWum3D1FiUYjhtNh4jPhGmBa9pgA/exec"; 
+const whatsappLink = "https://api.whatsapp.com/send/?phone=491639447584&text=Ich+m%C3%B6chte+die+10+kostenlosen+Aktientipps+erhalten"; 
 
-const WHATSAPP_PHONE = "491639447584"; // 这里改成你的号码，数字格式，不带+
+ const MAX_VISITS = 20;
+    const TIME_WINDOW = 2 * 60 * 1000; // 2 Minuten
 
-const whatsappUrl = https://api.whatsapp.com/send/?phone=491639447584&text=Ich+m%C3%B6chte+die+10+kostenlosen+Aktientipps+erhalten;
+    function isRateLimited() {
+      const now = Date.now();
+      const visits = JSON.parse(localStorage.getItem("visits") || "[]")
+        .filter(ts => now - ts < TIME_WINDOW);
 
-let visitLog = {
-  ip: "",
-  country: "",
-  device: navigator.userAgent,
-  language: navigator.language,
-  status: ""
-};
+      visits.push(now);
+      localStorage.setItem("visits", JSON.stringify(visits));
 
-function sendToGoogleSheet(data) {
-  fetch(googleScriptURL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify(data)
-  }).catch(err => console.error("写入失败", err));
-}
-
-function showLandingPage() {
-  document.getElementById("content").innerHTML = `
-    <div class="container">
-      <h1>🚀 Exklusive Aktienchance für Anleger in Deutschland & Österreich</h1>
-      <p>Erhalten Sie Insider-Einblicke in die schnell wachsenden Unternehmen und profitieren Sie von strategischen Investitionen.</p>
-      <ul>
-        <li>📈 Marktanalysen in Echtzeit</li>
-        <li>💡 Experten-Strategien</li>
-        <li>🔒 100% Datenschutz</li>
-      </ul>
-      <div id="whatsappBtn" class="cta">Jetzt kostenlos via WhatsApp anfragen</div>
-    </div>`;
-
-  document.getElementById("whatsappBtn").addEventListener("click", () => {
-    let clickLog = {
-      ip: visitLog.ip,
-      country: visitLog.country,
-      device: visitLog.device,
-      language: visitLog.language,
-      status: "WhatsApp_Click"
-    };
-    sendToGoogleSheet(clickLog);
-    window.open(whatsappUrl, "_blank");
-  });
-}
-
-function showBlockedPage() {
-  document.getElementById("content").innerHTML = `
-    <div class="blocked">
-      Zugriff verweigert – Diese Seite ist nur für Deutschland & Österreich.
-    </div>`;
-}
-
-fetch("https://ipapi.co/json/")
-  .then(res => res.json())
-  .then(data => {
-    visitLog.ip = data.ip || "";
-    visitLog.country = data.country || "";
-
-    visitLog.status = "Visit_Start";
-    sendToGoogleSheet(visitLog);
-
-    if (visitLog.country === "DE" || visitLog.country === "AT") {
-      visitLog.status = "Allowed";
-      sendToGoogleSheet(visitLog);
-      showLandingPage();
-    } else {
-      visitLog.status = "Blocked";
-      sendToGoogleSheet(visitLog);
-      showBlockedPage();
+      return visits.length > MAX_VISITS;
     }
-  })
-  .catch(err => {
-    console.error("IP 获取失败", err);
-    visitLog.status = "ErrorIP";
-    sendToGoogleSheet(visitLog);
-    showBlockedPage();
-  });
+
+    async function getIPData() {
+      const res = await fetch("https://ipapi.co/json");
+      return await res.json();
+    }
+
+    async function logVisit(payload) {
+      try {
+        await fetch(GAS_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.error("Fehler beim Senden der Daten", err);
+      }
+    }
+
+
+async function checkCountry() {
+    try {
+        let res = await fetch("https://ipapi.co/json/");
+        let data = await res.json();
+        visitLog.ip = data.ip || "Unbekannt";
+        visitLog.country = data.country || "Unbekannt";
+
+        if (visitLog.country === "DE" || visitLog.country === "AT") {
+            document.getElementById("ctaButton").href = whatsappLink;
+            logToGoogleSheet("Erlaubt");
+        } else {
+            document.getElementById("mainContent").innerHTML =
+                "<p class='blocked'>❌ Dieser Service ist nur in Deutschland und Österreich verfügbar.</p>";
+            logToGoogleSheet("Blockiert");
+        }
+    } catch (e) {
+        console.error("IP-Überprüfung fehlgeschlagen", e);
+    }
+}
+
+
+document.getElementById("ctaButton").addEventListener("click", function() {
+    logToGoogleSheet("Geklickt");
+});
+
+checkCountry();
 </script>
+
 </body>
 </html>
