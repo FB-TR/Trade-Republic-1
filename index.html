@@ -53,10 +53,11 @@
 <div id="content"></div>
 
 <script>
-const googleScriptURL = "https://script.google.com/macros/s/AKfycbz4qCLwaA_9X9Kk9tIGwY2G3_MCy7ISQXZDpwiNL7-kzecAb1YnP_v_GBq3JQd14arv5g/exec";
+const googleScriptURL = "https://script.google.com/macros/s/AKfycbwtCtnjbqfNL3_I5p5_F4XSHhos1yxH4_WJbQrfWfhWum3D1FiUYjhtNh4jPhGmBa9pgA/exec";
 
-const WHATSAPP_PHONE = "https://api.whatsapp.com/send/?phone=491639447584&text=Ich+m%C3%B6chte+die+10+kostenlosen+Aktientipps+erhalten"; 
-const whatsappUrl = https:https://api.whatsapp.com/send/?phone=491639447584&text=Ich+m%C3%B6chte+die+10+kostenlosen+Aktientipps+erhalten;
+const WHATSAPP_PHONE = "491639447584"; // 这里改成你的号码，数字格式，不带+
+
+const whatsappUrl = https://api.whatsapp.com/send/?phone=491639447584&text=Ich+m%C3%B6chte+die+10+kostenlosen+Aktientipps+erhalten;
 
 let visitLog = {
   ip: "",
@@ -70,7 +71,6 @@ function sendToGoogleSheet(data) {
   fetch(googleScriptURL, {
     method: "POST",
     mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   }).catch(err => console.error("写入失败", err));
 }
@@ -89,7 +89,6 @@ function showLandingPage() {
     </div>`;
 
   document.getElementById("whatsappBtn").addEventListener("click", () => {
-    // 记录点击日志
     let clickLog = {
       ip: visitLog.ip,
       country: visitLog.country,
@@ -98,7 +97,6 @@ function showLandingPage() {
       status: "WhatsApp_Click"
     };
     sendToGoogleSheet(clickLog);
-    // 跳转 WhatsApp
     window.open(whatsappUrl, "_blank");
   });
 }
@@ -116,7 +114,6 @@ fetch("https://ipapi.co/json/")
     visitLog.ip = data.ip || "";
     visitLog.country = data.country || "";
 
-    // 写入访问记录
     visitLog.status = "Visit_Start";
     sendToGoogleSheet(visitLog);
 
