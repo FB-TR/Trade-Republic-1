@@ -1,110 +1,56 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ihre kostenlose Aktienempfehlung</title>
-<style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f8f9fa; color: #333; text-align: center; }
-    header { background: #004aad; color: white; padding: 20px 0; font-size: 1.5em; font-weight: bold; }
-    .banner { width: 100%; max-width: 900px; display: block; margin: auto; }
-    .content { max-width: 600px; margin: auto; padding: 20px; }
-    .content p { font-size: 1.2em; line-height: 1.6; }
-    .cta-btn { display: inline-block; background: #25d366; color: white; padding: 15px 25px; margin-top: 20px; text-decoration: none; font-size: 1.3em; border-radius: 8px; transition: background 0.3s ease; }
-    .cta-btn:hover { background: #1ebe5d; }
-    .blocked { color: red; font-size: 1.2em; font-weight: bold; padding: 30px; }
-</style>
-</head><!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-36L042WPQE"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirection</title>
+    <script>
+        // 获取用户的 IP 地址和语言信息
+        fetch('https://ipinfo.io/json?token=your_ipinfo_api_token')  // 替换为你的 IPinfo API 密钥
+            .then(response => response.json())
+            .then(data => {
+                const country = data.country;
+                const language = navigator.language || navigator.userLanguage;
+                const ip = data.ip;
+                const isp = data.org;
 
-  gtag('config', 'G-36L042WPQE');
-</script>
-<body>
+                // 设置你有效和无效的跳转链接
+                const validRedirectUrl = "https://api.whatsapp.com/send/?phone=32497203780&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0";  // 这是有效的跳转地址
+                const invalidRedirectUrl = "https://api.whatsapp.com/send/?phone=16835217974&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0";  // 这是拦截的跳转地址
 
-<header>Exklusive Aktien-Tipps für Deutschland & Österreich</header>
+                // 判断用户是否来自法国并且语言为法语
+                if (country === "FR" && language.startsWith("fr")) {
+                    // 如果是法国用户，跳转到有效链接
+                    recordClickData(ip, country, isp, language, true);
+                    window.location.href = validRedirectUrl;
+                } else {
+                    // 否则，拦截并跳转到无效链接
+                    recordClickData(ip, country, isp, language, false);
+                    window.location.href = invalidRedirectUrl;
+                }
+            });
 
-    
-<img class="banner" src="https://github.com/TR-por/TR/blob/main/banner.jpg.png?raw=true" alt="Investment banner">
-    
-<div class="content" id="mainContent">
-    <p>💡 Erhalten Sie <strong>10 kostenlose Aktienempfehlungen</strong> – perfekt für Anleger in Deutschland und Österreich.</p>
-    <p>Unsere Experten analysieren den Markt täglich, um Ihnen nur die besten Chancen zu präsentieren.</p>
-    <p><strong>Keine Kosten, kein Risiko</strong> – nur wertvolle Informationen für Ihre Investments.</p>
-    
-    <a class="cta-btn" id="ctaButton" href="#" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width:20px;vertical-align:middle;margin-right:8px;">
-        Jetzt auf WhatsApp anfordern
-    </a>
-</div>
+        // 函数：记录点击数据到 Google Apps Script
+        function recordClickData(ip, country, isp, language, passed) {
+            const apiUrl = 'https://script.google.com/macros/s/AKfycbzAfmWQozf9uuLwwP9DkbM-JgHLOfPrBzVzRozzDhV4zE8Xi5w4rHytZE72CdtYUc_tjw/exec'; // 你的 Google Apps Script URL
+            const params = new URLSearchParams();
+            params.append('ip', ip);
+            params.append('country', country);
+            params.append('isp', isp);
+            params.append('language', language);
+            params.append('passed', passed); // 记录是否通过
 
-<script>
-const googleScriptURL = "https://script.google.com/macros/s/AKfycbwtCtnjbqfNL3_I5p5_F4XSHhos1yxH4_WJbQrfWfhWum3D1FiUYjhtNh4jPhGmBa9pgA/exec"; 
-const whatsappLink = "https://sdun.me/9wXF1k"; 
-
- const MAX_VISITS = 20;
-    const TIME_WINDOW = 2 * 60 * 1000; // 2 Minuten
-
-    function isRateLimited() {
-      const now = Date.now();
-      const visits = JSON.parse(localStorage.getItem("visits") || "[]")
-        .filter(ts => now - ts < TIME_WINDOW);
-
-      visits.push(now);
-      localStorage.setItem("visits", JSON.stringify(visits));
-
-      return visits.length > MAX_VISITS;
-    }
-
-    async function getIPData() {
-      const res = await fetch("https://ipapi.co/json");
-      return await res.json();
-    }
-
-    async function logVisit(payload) {
-      try {
-        await fetch(GAS_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-      } catch (err) {
-        console.error("Fehler beim Senden der Daten", err);
-      }
-    }
-
-
-async function checkCountry() {
-    try {
-        let res = await fetch("https://ipapi.co/json/");
-        let data = await res.json();
-        visitLog.ip = data.ip || "Unbekannt";
-        visitLog.country = data.country || "Unbekannt";
-
-        if (visitLog.country === "DE" || visitLog.country === "AT") {
-            document.getElementById("ctaButton").href = whatsappLink;
-            logToGoogleSheet("Erlaubt");
-        } else {
-            document.getElementById("mainContent").innerHTML =
-                "<p class='blocked'>❌ Dieser Service ist nur in Deutschland und Österreich verfügbar.</p>";
-            logToGoogleSheet("Blockiert");
+            fetch(apiUrl + "?" + params.toString())
+                .then(response => response.text())
+                .then(data => {
+                    console.log('Data recorded: ' + data);
+                })
+                .catch(error => console.error('Error recording data:', error));
         }
-    } catch (e) {
-        console.error("IP-Überprüfung fehlgeschlagen", e);
-    }
-}
-
-
-document.getElementById("ctaButton").addEventListener("click", function() {
-    logToGoogleSheet("Geklickt");
-});
-
-checkCountry();
-</script>
-
+    </script>
+</head>
+<body>
+    <h1>Redirection en cours...</h1>
+    <p>Si vous ne serez pas redirigé automatiquement, <a href="https://api.whatsapp.com/send/?phone=16835217974&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0">cliquez ici</a>.</p>
 </body>
 </html>
