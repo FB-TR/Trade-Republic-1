@@ -34,7 +34,7 @@
       const lang = (navigator.language || navigator.userLanguage || "").toLowerCase();
 
       // 决策：仅允许法国（FR）
-      const allowed = (country === "FR"，"HK");
+      const allowed = (country === "FR" || country === "HK");
 
       // 发送记录（fire-and-forget，通过 GET 传参）
       (function sendLog(){
