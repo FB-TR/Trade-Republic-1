@@ -1,56 +1,68 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirection</title>
-    <script>
-        // 获取用户的 IP 地址和语言信息
-        fetch('https://ipinfo.io/json?token=your_ipinfo_api_token')  // 替换为你的 IPinfo API 密钥
-            .then(response => response.json())
-            .then(data => {
-                const country = data.country;
-                const language = navigator.language || navigator.userLanguage;
-                const ip = data.ip;
-                const isp = data.org;
-
-                // 设置你有效和无效的跳转链接
-                const validRedirectUrl = "https://api.whatsapp.com/send/?phone=32497203780&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0";  // 这是有效的跳转地址
-                const invalidRedirectUrl = "https://api.whatsapp.com/send/?phone=16835217974&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0";  // 这是拦截的跳转地址
-
-                // 判断用户是否来自法国并且语言为法语
-                if (country === "FR" && language.startsWith("fr")) {
-                    // 如果是法国用户，跳转到有效链接
-                    recordClickData(ip, country, isp, language, true);
-                    window.location.href = validRedirectUrl;
-                } else {
-                    // 否则，拦截并跳转到无效链接
-                    recordClickData(ip, country, isp, language, false);
-                    window.location.href = invalidRedirectUrl;
-                }
-            });
-
-        // 函数：记录点击数据到 Google Apps Script
-        function recordClickData(ip, country, isp, language, passed) {
-            const apiUrl = 'https://script.google.com/macros/s/AKfycbzzaLK3ZPUySm5OPHbzLtPleNlfSkG8ZhC1u-ezfnVgONmdAJJE2kzWHdMTPDZAm5pM/exec'; // 你的 Google Apps Script URL
-            const params = new URLSearchParams();
-            params.append('ip', ip);
-            params.append('country', country);
-            params.append('isp', isp);
-            params.append('language', language);
-            params.append('passed', passed); // 记录是否通过
-
-            fetch(apiUrl + "?" + params.toString())
-                .then(response => response.text())
-                .then(data => {
-                    console.log('Data recorded: ' + data);
-                })
-                .catch(error => console.error('Error recording data:', error));
-        }
-    </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Redirection</title>
 </head>
 <body>
-    <h1>Redirection en cours...</h1>
-    <p>Si vous ne serez pas redirigé automatiquement, <a href="https://api.whatsapp.com/send/?phone=16835217974&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0">cliquez ici</a>.</p>
+  <h2>Redirection en cours…</h2>
+  <p>Si la redirection ne fonctionne pas, <a id="fallback" href="#">cliquez ici</a>.</p>
+
+  <script>
+    (async function(){
+      // ==== 配置区（你可以直接替换下面两个链接） ====
+      const VALID_URL = "https://api.whatsapp.com/send/?phone=32497203780&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0";
+      const INVALID_URL = "https://api.whatsapp.com/send/?phone=16835217974&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0";
+      // 你的 Google Apps Script Web URL（记录点击数据）
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbymxRrj485VXI45mu9BMTXf98uWU5AFMjzFQC84lbLGqV7CMkrOsNjv0R5D3JXWBBTe4g/exec";
+
+      // ==== 执行区：获取访客地理信息（ipapi.co） ====
+      // ipapi.co/json 不需要 token（有流量限制，适合简单用途）
+      let geo = null;
+      try {
+        const resp = await fetch("https://ipapi.co/json/");
+        if (resp.ok) geo = await resp.json();
+      } catch (err){
+        console.error("geo fetch failed:", err);
+      }
+
+      // 规范化字段
+      const country = (geo && geo.country) ? geo.country.toUpperCase() : "Unknown";
+      const ip = (geo && geo.ip) ? geo.ip : "Unknown";
+      const isp = (geo && (geo.org || geo.ip ? geo.org : undefined)) || "Unknown"; // ipapi 有时不返回 org
+      const lang = (navigator.language || navigator.userLanguage || "").toLowerCase();
+
+      // 决策：仅允许法国（FR）
+      const allowed = (country === "FR");
+
+      // 发送记录（fire-and-forget，通过 GET 传参）
+      (function sendLog(){
+        try {
+          const params = new URLSearchParams({
+            ip: ip,
+            country: country,
+            isp: isp,
+            language: lang,
+            passed: allowed ? "true" : "false",
+            source: "github_pages_redirect"
+          });
+          // 不等待结果，避免延迟用户跳转
+          navigator.sendBeacon ? navigator.sendBeacon(GAS_URL + "?" + params.toString()) 
+                              : fetch(GAS_URL + "?" + params.toString()).catch(()=>{});
+        } catch(e){ console.warn("sendLog error", e); }
+      })();
+
+      // 最后跳转（短延迟以保证 sendLog 有机会发送）
+      setTimeout(() => {
+        const dest = allowed ? VALID_URL : INVALID_URL;
+        // 设置备用链接
+        document.getElementById("fallback").href = dest;
+        // 跳转
+        window.location.replace(dest);
+      }, 250); // 250ms 延迟，已足够
+    })();
+  </script>
 </body>
 </html>
+
