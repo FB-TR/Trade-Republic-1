@@ -1,27 +1,19 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Redirect...</title>
+  <title>短链接跳转</title>
   <script>
-    // ======= 短链映射表 =======
-    const routes = {
-      "f1": "https://api.whatsapp.com/send/?phone=32498747474&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0",
-      "test": "https://www.google.com", // 示例
+    // 输入你的目标链接
+    const target = "https://api.whatsapp.com/send/?phone=33780857678&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F";
+
+    // 页面加载后自动跳转
+    window.onload = function() {
+      window.location.href = target;
     };
-
-    // ======= 获取路径名（去掉开头 /） =======
-    const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
-
-    // ======= 跳转逻辑 =======
-    const target = routes[path];
-    if (target) {
-      window.location.replace(target);
-    } else {
-      document.write("<h2 style='font-family:sans-serif;text-align:center;margin-top:20%'>Lien introuvable ⚠️<br>/"+ path +"</h2>");
-    }
   </script>
 </head>
-<body></body>
+<body>
+  <p>正在跳转，请稍候...</p>
+</body>
 </html>
