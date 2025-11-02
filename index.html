@@ -1,68 +1,27 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Redirection</title>
-</head>
-<body>
-  <h2>Redirection en cours…</h2>
-  <p>Si la redirection ne fonctionne pas, <a id="fallback" href="#">cliquez ici</a>.</p>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Redirect...</title>
   <script>
-    (async function(){
-      // ==== 配置区（你可以直接替换下面两个链接） ====
-      const VALID_URL = "https://api.whatsapp.com/send/?phone=32465851171&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0";
-      const INVALID_URL = "https://api.whatsapp.com/send/?phone=16835217974&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0";
-      // 你的 Google Apps Script Web URL（记录点击数据）
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbymxRrj485VXI45mu9BMTXf98uWU5AFMjzFQC84lbLGqV7CMkrOsNjv0R5D3JXWBBTe4g/exec";
+    // ======= 短链映射表 =======
+    const routes = {
+      "f1": "https://api.whatsapp.com/send/?phone=32498747474&text=Bonjour%2C+pouvez-vous+me+donner+quelques+conseils+en+mati%C3%A8re+d%E2%80%99investissement+%3F&type=phone_number&app_absent=0",
+      "test": "https://www.google.com", // 示例
+    };
 
-      // ==== 执行区：获取访客地理信息（ipapi.co） ====
-      // ipapi.co/json 不需要 token（有流量限制，适合简单用途）
-      let geo = null;
-      try {
-        const resp = await fetch("https://ipapi.co/json/");
-        if (resp.ok) geo = await resp.json();
-      } catch (err){
-        console.error("geo fetch failed:", err);
-      }
+    // ======= 获取路径名（去掉开头 /） =======
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
 
-      // 规范化字段
-      const country = (geo && geo.country) ? geo.country.toUpperCase() : "Unknown";
-      const ip = (geo && geo.ip) ? geo.ip : "Unknown";
-      const isp = (geo && (geo.org || geo.ip ? geo.org : undefined)) || "Unknown"; // ipapi 有时不返回 org
-      const lang = (navigator.language || navigator.userLanguage || "").toLowerCase();
-
-      // 决策：仅允许法国（FR）
-      const allowed = (country === "FR" );
-
-      // 发送记录（fire-and-forget，通过 GET 传参）
-      (function sendLog(){
-        try {
-          const params = new URLSearchParams({
-            ip: ip,
-            country: country,
-            isp: isp,
-            language: lang,
-            passed: allowed ? "true" : "false",
-            source: "github_pages_redirect"
-          });
-          // 不等待结果，避免延迟用户跳转
-          navigator.sendBeacon ? navigator.sendBeacon(GAS_URL + "?" + params.toString()) 
-                              : fetch(GAS_URL + "?" + params.toString()).catch(()=>{});
-        } catch(e){ console.warn("sendLog error", e); }
-      })();
-
-      // 最后跳转（短延迟以保证 sendLog 有机会发送）
-      setTimeout(() => {
-        const dest = allowed ? VALID_URL : INVALID_URL;
-        // 设置备用链接
-        document.getElementById("fallback").href = dest;
-        // 跳转
-        window.location.replace(dest);
-      }, 250); // 250ms 延迟，已足够
-    })();
+    // ======= 跳转逻辑 =======
+    const target = routes[path];
+    if (target) {
+      window.location.replace(target);
+    } else {
+      document.write("<h2 style='font-family:sans-serif;text-align:center;margin-top:20%'>Lien introuvable ⚠️<br>/"+ path +"</h2>");
+    }
   </script>
-</body>
+</head>
+<body></body>
 </html>
-
